@@ -1,0 +1,212 @@
+# yaml-language-server: $schema=https://schema.zeabur.app/template.json
+apiVersion: zeabur.com/v1
+kind: Template
+metadata: 
+  name: kener-status-page-working
+spec: 
+  description: >- 
+    Sleek, lightweight status page system backed by PostgreSQL with proven working configuration. 
+  coverImage: "https://kener.ing/newbg.png" 
+  icon: "https://kener.ing/logo.png" 
+  variables: 
+    - key: PUBLIC_DOMAIN
+      type: DOMAIN
+      name: Kener Domain
+      description: The domain name for your Kener instance (e.g. status.example.com). 
+    - key: KENER_SECRET_KEY
+      type: PASSWORD
+      name: Secret Key
+      description: A strong random secret used for encryption (required). 
+    - key: ORIGIN
+      type: STRING
+      name: Origin
+      description: "Full origin URL (protocol + domain, no trailing slash). Example: https://status.example.com" 
+    - key: TZ
+      type: STRING
+      name: Timezone
+      description: Server timezone (e.g. Etc/UTC or Asia/Dhaka). 
+    - key: POSTGRES_USER
+      type: STRING
+      name: PostgreSQL Username
+      description: Username for PostgreSQL (internal DB user). 
+    - key: POSTGRES_PASSWORD
+      type: PASSWORD
+      name: PostgreSQL Password
+      description: Password for PostgreSQL (internal DB user). 
+    - key: POSTGRES_DB
+      type: STRING
+      name: PostgreSQL Database
+      description: Database name to use for Kener. 
+    - key: ENABLE_SMTP
+      type: STRING
+      name: Do you want to set up SMTP? (yes/no) 
+      description: Type "yes" to configure SMTP fields below, otherwise leave SMTP fields blank to skip. 
+    - key: SMTP_HOST
+      type: STRING
+      name: SMTP Host
+      description: (Only if ENABLE_SMTP=yes) SMTP server hostname. Leave blank to skip. 
+    - key: SMTP_PORT
+      type: STRING
+      name: SMTP Port
+      description: (Only if ENABLE_SMTP=yes) Port number ("465" for implicit SSL or "587" for STARTTLS). 
+    - key: SMTP_USER
+      type: STRING
+      name: SMTP Username
+      description: (Only if ENABLE_SMTP=yes) Username for SMTP authentication (if required). 
+    - key: SMTP_PASS
+      type: PASSWORD
+      name: SMTP Password
+      description: (Only if ENABLE_SMTP=yes) Password for SMTP authentication (if required). 
+    - key: SMTP_SECURE
+      type: STRING
+      name: SMTP Secure
+      description: (Only if ENABLE_SMTP=yes) Set to "1" for implicit SSL (port 465), "0" for STARTTLS. 
+    - key: RESEND_API_KEY
+      type: STRING
+      name: Resend API Key (optional) 
+      description: If using Resend.com for email, enter your API key here. Skip if using SMTP. 
+    - key: RESEND_SENDER_EMAIL
+      type: STRING
+      name: Resend Sender Email (optional) 
+      description: Sender email for Resend (e.g. "Status Page <alerts@yourdomain.com>"). 
+  tags: 
+    - Status
+    - Monitoring
+    - Website
+  readme: |- 
+    # Kener — Modern Status Page System
+
+    This Zeabur template deploys **Kener** with **PostgreSQL** as the backend, using the exact PostgreSQL configuration from the working LobeChat template.
+
+    ## Quick start
+    1. Fill the variables above (PUBLIC_DOMAIN, KENER_SECRET_KEY, ORIGIN, TZ, and Postgres credentials). 
+     2. If you want email sending, choose between SMTP (set ENABLE_SMTP=yes and fill SMTP_* fields) or Resend
+       (fill RESEND_API_KEY and RESEND_SENDER_EMAIL). 
+    3. Deploy the template. Wait for Postgres to reach "database system is ready to accept connections", then
+       Kener will complete startup, run migrations, and seed data. 
+
+    ## Notes
+    - `KENER_SECRET_KEY` must be a strong random string. 
+    - `ORIGIN` must include protocol and no trailing slash (e.g. `https://status.example.com`). 
+    - PostgreSQL data is stored using the same configuration as the working LobeChat template.
+
+  services: 
+    - name: postgresql
+      icon: "https://raw.githubusercontent.com/zeabur/service-icons/main/marketplace/postgresql.svg" 
+      template: PREBUILT
+      spec: 
+        source: 
+          # Exact image from working LobeChat template
+          image: "pgvector/pgvector:pg16"  
+        ports: 
+          - id: database
+            port: 5432
+            type: TCP
+        volumes: 
+          - id: data
+            dir: /var/lib/postgresql/data
+        instructions: 
+          - title: Connection String
+            content: >- 
+              postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PORT_FORWARDED_HOSTNAME}:${DATABASE_PORT_FORWARDED_PORT}/${POSTGRES_DB} 
+          - title: PostgreSQL Connect Command
+            content: >- 
+              psql "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PORT_FORWARDED_HOSTNAME}:${DATABASE_PORT_FORWARDED_PORT}/${POSTGRES_DB}" 
+          - title: PostgreSQL username
+            content: ${POSTGRES_USER} 
+          - title: PostgreSQL password
+            content: ${POSTGRES_PASSWORD} 
+          - title: PostgreSQL database
+            content: ${POSTGRES_DB} 
+          - title: PostgreSQL host
+            content: ${PORT_FORWARDED_HOSTNAME} 
+          - title: PostgreSQL port
+            content: ${DATABASE_PORT_FORWARDED_PORT} 
+        env: 
+          # Using exact configuration from working LobeChat template
+          PGDATA: 
+            default: /var/lib/postgresql/data/pgdata
+          POSTGRES_CONNECTION_STRING: 
+            default: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}   
+            expose: true
+          POSTGRES_DATABASE: 
+            default: ${POSTGRES_DB}   
+            expose: true  
+          POSTGRES_DB: 
+            default: ${POSTGRES_DB} 
+            expose: true
+          POSTGRES_USER: 
+            default: ${POSTGRES_USER} 
+            expose: true
+          POSTGRES_PASSWORD: 
+            default: ${POSTGRES_PASSWORD} 
+            expose: true
+          POSTGRES_HOST: 
+            default: ${CONTAINER_HOSTNAME} 
+            expose: true
+          POSTGRES_PORT: 
+            default: ${DATABASE_PORT} 
+            expose: true
+          POSTGRES_URI: 
+            default: ${POSTGRES_CONNECTION_STRING} 
+            expose: true
+          POSTGRES_USERNAME: 
+            default: ${POSTGRES_USER} 
+            expose: true
+
+    - name: kener
+      icon: "https://kener.ing/logo.png" 
+      template: PREBUILT
+      domainKey: PUBLIC_DOMAIN
+      spec: 
+        source: 
+          image: "rajnandan1/kener:latest" 
+        ports: 
+          - id: web
+            port: 3000
+            type: HTTP
+        volumes: 
+          - id: data
+            dir: /app/database
+          - id: uploads
+            dir: /app/uploads
+        instructions: 
+          - type: TEXT
+            title: Access your Kener Dashboard
+            content: "https://${PUBLIC_DOMAIN}" 
+          - type: TEXT
+            title: PostgreSQL Connection
+            content: Uses the internal Postgres service at `postgres:5432`. 
+        env: 
+          TZ: 
+            default: ${TZ} 
+            expose: true
+          KENER_SECRET_KEY: 
+            default: ${KENER_SECRET_KEY} 
+            expose: true
+          ORIGIN: 
+            default: ${ORIGIN} 
+            expose: true
+          PORT: 
+            default: "3000" 
+            expose: true
+          KENER_BASE_PATH: 
+            default: "/" 
+            expose: true
+          DATABASE_URL: 
+            default: ${POSTGRES_CONNECTION_STRING} 
+            expose: true
+          RESEND_API_KEY: 
+            default: ${RESEND_API_KEY} 
+          RESEND_SENDER_EMAIL: 
+            default: ${RESEND_SENDER_EMAIL} 
+          SMTP_HOST: 
+            default: ${SMTP_HOST} 
+          SMTP_PORT: 
+            default: ${SMTP_PORT} 
+          SMTP_USER: 
+            default: ${SMTP_USER} 
+          SMTP_PASS: 
+            default: ${SMTP_PASS} 
+          SMTP_SECURE: 
+            default: ${SMTP_SECURE}
