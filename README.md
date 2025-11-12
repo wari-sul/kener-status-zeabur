@@ -58,7 +58,7 @@ zeabur template deploy --file kener_template.yaml
 
 ```
 📦 kener-zeabur-template/
-├── template.yaml      # Main deployment template
+├── kener_template.yaml      # Main deployment template
 ├── README.md          # This file
 └── LICENSE
 ```
