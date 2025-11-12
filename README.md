@@ -1,8 +1,8 @@
 # Kener Status Page - Zeabur Template
 
-A sleek, modern status page deployment template for [Zeabur](https://zeabur.com) using Kener and PostgreSQL.
+A sleek, modern status page deployment template for [Zeabur](https://zeabur.com) using [Kener](https://kener.ing/) and PostgreSQL.
 
-[![Deploy to Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/kener-status-page) (currently not available. its in review )
+[![Deploy to Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/TXURD9)
 
 ## 🚀 Quick Deploy
 
@@ -10,7 +10,7 @@ Click the deploy button above or use the Zeabur CLI:
 
 ```bash
 zeabur auth login
-zeabur template deploy --url https://zeabur.com/templates/kener-status-page
+zeabur template deploy --url https://zeabur.com/templates/TXURD9
 ```
 
 ## 📋 Template Variables
@@ -44,14 +44,14 @@ Choose either SMTP or Resend for email alerts:
 
 ## 🛠 Local Development
 
-Want to modify the template? Clone this repo and edit `template.yaml`:
+Want to modify the template? Clone this repo and edit `kener_template.yaml`:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/kener-status-page-template.git
-cd kener-status-page-template
+git clone https://github.com/wari-sul/kener-status-zeabur.git
+cd kener-status-zeabur
 
-# Edit template.yaml with your customizations
-zeabur template deploy --file template.yaml
+# Edit kener_template.yaml with your customizations
+zeabur template deploy --file kener_template.yaml
 ```
 
 ## 📁 Repository Structure
@@ -60,9 +60,7 @@ zeabur template deploy --file template.yaml
 📦 kener-zeabur-template/
 ├── template.yaml      # Main deployment template
 ├── README.md          # This file
-└── .github/
-    └── workflows/
-        └── sync-template.yaml  # Auto-sync with Zeabur (optional)
+└── LICENSE
 ```
 
 ## 🔧 What's Included
@@ -87,7 +85,7 @@ Once deployed, you can:
 ## 🔒 Security Notes
 
 - Generate a strong `KENER_SECRET_KEY` (use `openssl rand -base64 32`)
-- Use HTTPS for your domain
+- Use HTTPS for your domain (if using custom domain)
 - Consider adding authentication if needed
 - Regularly update the Kener image
 
